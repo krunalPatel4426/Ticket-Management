@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database ER Diagram - Ticket Management System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .controls select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+        
+        .controls label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        #mynetwork {
+            width: 100%;
+            height: 700px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .legend {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #495057;
+        }
+        
+        .table-info {
+            padding: 20px 30px;
+            background: white;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .table-info h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .table-card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .table-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .table-card ul {
+            list-style: none;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .table-card li {
+            padding: 3px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .pk {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .fk {
+            color: #3498db;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗂️ Database ER Diagram</h1>
+            <p>Ticket Management System - PostgreSQL Schema Visualization</p>
+        </div>
+        
+        <div class="controls">
+            <button onclick="network.fit()">🎯 Fit to Screen</button>
+            <button onclick="resetZoom()">🔄 Reset View</button>
+            <label for="layoutType">Layout:</label>
+            <select id="layoutType" onchange="changeLayout()">
+                <option value="hierarchical">Hierarchical</option>
+                <option value="force">Force-Directed</option>
+                <option value="circular">Circular</option>
+            </select>
+            <button onclick="togglePhysics()">⚡ Toggle Physics</button>
+            <button onclick="exportDiagram()">💾 Export PNG</button>
+        </div>
+        
+        <div id="mynetwork"></div>
+        
+        <div class="legend">
+            <h3>📊 Legend</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #e8f4f8;"></div>
+                    <span>Core Tables (User, Ticket)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #fff4e6;"></div>
+                    <span>Support Tables (Comments, Notes)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #f0f4f8;"></div>
+                    <span>Configuration Tables</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #e8f5e9;"></div>
+                    <span>Permission Tables</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-info">
+            <h3>📋 Database Tables (22 tables)</h3>
+            <div class="table-grid" id="tableList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Database schema data
+        const tables = [
+            {
+                name: "user_front",
+                columns: ["user_front_id (PK)", "user_name", "email", "contact_no", "address", "reporting_manager (FK)", "is_team_leader", "department_name", "is_deleted", "created_on"],
+                color: "#e8f4f8",
+                group: "core"
+            },
+            {
+                name: "user_role",
+                columns: ["user_role_id (PK)", "user_role_name", "is_deleted"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "user_role_new",
+                columns: ["user_front_id (FK)", "user_role_id (FK)"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "ticket",
+                columns: ["ticket_id (PK)", "title", "description", "type", "sub_type", "sub_type_id (FK)", "priority", "status", "user_front_id (FK)", "reporting_manager_id (FK)", "managedby_id", "assigned_to", "l1_approved", "l2_approved", "getit_approved", "dead_line", "planned", "re_open", "created_by", "created_on", "submitted_on", "is_deleted"],
+                color: "#e8f4f8",
+                group: "core"
+            },
+            {
+                name: "ticket_attachment",
+                columns: ["ticket_attachment_id (PK)", "ticket_id (FK)", "name", "src", "signed_src", "is_deleted"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "ticket_approval",
+                columns: ["ticket_approval_id (PK)", "ticket_id (FK)", "user_front_id (FK)", "ticket_approved", "token"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "comments",
+                columns: ["comment_id (PK)", "ticket_id (FK)", "description", "user_email", "user_name", "user_role_id (FK)", "created_on"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "comments_attachment",
+                columns: ["comment_attachment_id (PK)", "comment_id (FK)", "name", "src", "signed_src", "is_deleted"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "notes",
+                columns: ["notes_id (PK)", "ticket_id (FK)", "description", "user_email", "user_name", "user_role_id (FK)", "created_on"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "notes_attachment",
+                columns: ["notes_attachment_id (PK)", "notes_id (FK)", "name", "src", "signed_src", "is_deleted"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "status_history",
+                columns: ["status_id (PK)", "ticket_id (FK)", "status", "approver_id (FK)", "modified_on", "is_read"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "reject_history",
+                columns: ["reject_history_id (PK)", "ticket_id (FK)", "rejecter_id (FK)", "reject_reason", "rejected_on"],
+                color: "#fff4e6",
+                group: "support"
+            },
+            {
+                name: "type_master",
+                columns: ["sub_type_id (PK)", "type", "sub_type", "approval_required", "uid", "created_by", "created_on", "alter_by", "modified_on", "is_deleted"],
+                color: "#f0f4f8",
+                group: "config"
+            },
+            {
+                name: "nav_menu",
+                columns: ["nav_menu_id (PK)", "title", "icon_class", "menu_url", "ordering", "status", "is_deleted"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "nav_sub_menu",
+                columns: ["nav_sub_menu_id (PK)", "nav_menu_id (FK)", "title", "icon_class", "menu_url", "action", "type", "ordering", "status", "is_deleted"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "nav_menu_action",
+                columns: ["nav_menu_action_id (PK)", "action_name"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "nav_menu_permission",
+                columns: ["nav_menu_permission_id (PK)", "user_role_id (FK)", "nav_menu_id (FK)", "nav_sub_menu_id (FK)", "nav_menu_action_id (FK)", "status"],
+                color: "#e8f5e9",
+                group: "permission"
+            },
+            {
+                name: "document",
+                columns: ["document_id (PK)", "user_front_id (FK)", "title", "name", "type", "src", "signed_src", "src_icon", "signed_src_icon", "name_icon", "created_by", "created_on", "is_deleted"],
+                color: "#f0f4f8",
+                group: "config"
+            },
+            {
+                name: "feedback",
+                columns: ["feedback_id (PK)", "user_front_id (FK)", "description", "created_by", "created_on", "is_deleted"],
+                color: "#f0f4f8",
+                group: "config"
+            },
+            {
+                name: "notification_master",
+                columns: ["notification_id (PK)", "user_front_id (FK)", "show_user_front_id (FK)", "notification_description", "notification_url", "type", "is_read", "created_by", "created_on", "is_deleted"],
+                color: "#f0f4f8",
+                group: "config"
+            },
+            {
+                name: "one_signal",
+                columns: ["one_signal_id (PK)", "user_front_id (FK)", "one_signal_user_id", "created_by", "created_on", "is_deleted"],
+                color: "#f0f4f8",
+                group: "config"
+            },
+            {
+                name: "company_setting",
+                columns: ["company_setting_id (PK)", "type", "value", "add_value", "user_id"],
+                color: "#f0f4f8",
+                group: "config"
+            }
+        ];
+
+        // Define relationships
+        const relationships = [
+            // User relationships
+            { from: "user_front", to: "user_front", label: "reporting_manager" },
+            { from: "user_role_new", to: "user_front", label: "user_front_id" },
+            { from: "user_role_new", to: "user_role", label: "user_role_id" },
+            
+            // Ticket relationships
+            { from: "ticket", to: "user_front", label: "user_front_id" },
+            { from: "ticket", to: "user_front", label: "reporting_manager_id" },
+            { from: "ticket", to: "type_master", label: "sub_type_id" },
+            
+            // Ticket support tables
+            { from: "ticket_attachment", to: "ticket", label: "ticket_id" },
+            { from: "ticket_approval", to: "ticket", label: "ticket_id" },
+            { from: "ticket_approval", to: "user_front", label: "user_front_id" },
+            { from: "comments", to: "ticket", label: "ticket_id" },
+            { from: "comments", to: "user_role", label: "user_role_id" },
+            { from: "comments_attachment", to: "comments", label: "comment_id" },
+            { from: "notes", to: "ticket", label: "ticket_id" },
+            { from: "notes", to: "user_role", label: "user_role_id" },
+            { from: "notes_attachment", to: "notes", label: "notes_id" },
+            { from: "status_history", to: "ticket", label: "ticket_id" },
+            { from: "status_history", to: "user_front", label: "approver_id" },
+            { from: "reject_history", to: "ticket", label: "ticket_id" },
+            { from: "reject_history", to: "user_front", label: "rejecter_id" },
+            
+            // Navigation/Permission relationships
+            { from: "nav_sub_menu", to: "nav_menu", label: "nav_menu_id" },
+            { from: "nav_menu_permission", to: "user_role", label: "user_role_id" },
+            { from: "nav_menu_permission", to: "nav_menu", label: "nav_menu_id" },
+            { from: "nav_menu_permission", to: "nav_sub_menu", label: "nav_sub_menu_id" },
+            { from: "nav_menu_permission", to: "nav_menu_action", label: "nav_menu_action_id" },
+            
+            // Other relationships
+            { from: "document", to: "user_front", label: "user_front_id" },
+            { from: "feedback", to: "user_front", label: "user_front_id" },
+            { from: "notification_master", to: "user_front", label: "user_front_id" },
+            { from: "notification_master", to: "user_front", label: "show_user_front_id" },
+            { from: "one_signal", to: "user_front", label: "user_front_id" }
+        ];
+
+        // Create nodes
+        const nodes = tables.map(table => ({
+            id: table.name,
+            label: table.name,
+            shape: 'box',
+            color: {
+                background: table.color,
+                border: '#495057',
+                highlight: {
+                    background: '#667eea',
+                    border: '#764ba2'
+                }
+            },
+            font: {
+                size: 14,
+                face: 'arial',
+                bold: true
+            },
+            margin: 10,
+            widthConstraint: {
+                minimum: 120,
+                maximum: 200
+            }
+        }));
+
+        // Create edges
+        const edges = relationships.map((rel, index) => ({
+            from: rel.from,
+            to: rel.to,
+            arrows: 'to',
+            label: rel.label,
+            font: {
+                size: 10,
+                align: 'middle'
+            },
+            color: {
+                color: '#adb5bd',
+                highlight: '#667eea'
+            },
+            smooth: {
+                type: 'cubicBezier',
+                forceDirection: 'horizontal',
+                roundness: 0.4
+            }
+        }));
+
+        // Create network
+        const container = document.getElementById('mynetwork');
+        const data = { nodes: nodes, edges: edges };
+        
+        const options = {
+            layout: {
+                hierarchical: {
+                    direction: 'UD',
+                    sortMethod: 'directed',
+                    levelSeparation: 150,
+                    nodeSpacing: 200
+                }
+            },
+            physics: {
+                enabled: true,
+                hierarchicalRepulsion: {
+                    nodeDistance: 150
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                navigationButtons: true,
+                keyboard: true
+            },
+            manipulation: {
+                enabled: false
+            }
+        };
+
+        const network = new vis.Network(container, data, options);
+
+        // Populate table list
+        const tableListDiv = document.getElementById('tableList');
+        tables.forEach(table => {
+            const card = document.createElement('div');
+            card.className = 'table-card';
+            
+            let columnsHtml = '';
+            const displayColumns = table.columns.slice(0, 5);
+            
+            displayColumns.forEach(col => {
+                let displayCol = col;
+                if (col.includes('(PK)')) {
+                    displayCol = col.replace('(PK)', '<span class="pk">🔑 PK</span>');
+                } else if (col.includes('(FK)')) {
+                    displayCol = col.replace('(FK)', '<span class="fk">🔗 FK</span>');
+                }
+                columnsHtml += '<li>' + displayCol + '</li>';
+            });
+            
+            if (table.columns.length > 5) {
+                columnsHtml += '<li>... and ' + (table.columns.length - 5) + ' more</li>';
+            }
+            
+            card.innerHTML = '<h4>' + table.name + '</h4><ul>' + columnsHtml + '</ul>';
+            tableListDiv.appendChild(card);
+        });
+
+        // Control functions
+        function changeLayout() {
+            const layoutType = document.getElementById('layoutType').value;
+            let newOptions = {};
+            
+            if (layoutType === 'hierarchical') {
+                newOptions = {
+                    layout: {
+                        hierarchical: {
+                            direction: 'UD',
+                            sortMethod: 'directed',
+                            levelSeparation: 150,
+                            nodeSpacing: 200
+                        }
+                    }
+                };
+            } else if (layoutType === 'force') {
+                newOptions = {
+                    layout: {
+                        hierarchical: false
+                    },
+                    physics: {
+                        enabled: true,
+                        barnesHut: {
+                            gravitationalConstant: -2000,
+                            springConstant: 0.001,
+                            springLength: 200
+                        }
+                    }
+                };
+            } else if (layoutType === 'circular') {
+                newOptions = {
+                    layout: {
+                        hierarchical: false
+                    }
+                };
+            }
+            
+            network.setOptions(newOptions);
+        }
+
+        function resetZoom() {
+            network.fit();
+        }
+
+        let physicsEnabled = true;
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            network.setOptions({ physics: { enabled: physicsEnabled } });
+        }
+
+        function exportDiagram() {
+            alert('To export: Right-click on the diagram and select "Save image as..." or take a screenshot');
+        }
+
+        // Add click event to show table details
+        network.on("selectNode", function(params) {
+            const tableName = params.nodes[0];
+            const table = tables.find(t => t.name === tableName);
+            if (table) {
+                alert('Table: ' + table.name + '\n\nColumns:\n' + table.columns.join('\n'));
+            }
+        });
+    </script>
+</body>
+</html>

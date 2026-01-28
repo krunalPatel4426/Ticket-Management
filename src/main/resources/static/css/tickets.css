@@ -1,0 +1,24 @@
+body {
+    font-size: 14px;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+.badge {
+    font-size: 0.85rem;
+}
+
+#pagination button {
+    min-width: 36px;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
