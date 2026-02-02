@@ -58,4 +58,23 @@ $(document).ready(function () {
     $('#applyBtn').on('click', function() {
         table.ajax.reload();
     });
+    $('#statusFilter, #priorityFilter, #sortBy, #sortDir').change(function () {
+        console.log($('#statusFilter').val());
+        table.ajax.reload();
+    });
+
+    let typingTimer;
+    const doneTypingInterval = 500;
+
+    $('#searchBox').on('keyup', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function() {
+            console.log("User stopped typing. Searching...");
+            table.ajax.reload();
+        }, doneTypingInterval);
+    });
+
+    $('#searchBox').on('keydown', function () {
+        clearTimeout(typingTimer);
+    });
 });
