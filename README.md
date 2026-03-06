@@ -75,7 +75,7 @@ This project is a robust, simple transaction system built for enterprise product
 ## ⚙️ Setup and Installation
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/yourusername/wallet-order-system.git](https://github.com/yourusername/wallet-order-system.git)
+    git clone https://github.com/krunalPatel4426/Ticket-Management.git
     cd wallet-order-system
     ```
 2.  **Build the project:**
